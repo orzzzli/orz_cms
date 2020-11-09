@@ -2,6 +2,9 @@ package main
 
 import (
 	"flag"
+	"net/http"
+
+	"github.com/orzzzli/orz_cms/src/controller"
 
 	"github.com/orzzzli/orz_cms/src/source"
 
@@ -27,7 +30,7 @@ func main() {
 
 	title, ok := orzconfiger.GetString("mysql", "title")
 	if !ok {
-		logger.Fatal("cant found host in mysql.title")
+		logger.Fatal("cant found title in mysql.title")
 	}
 	host, ok := orzconfiger.GetString("mysql", "host")
 	if !ok {
@@ -35,27 +38,27 @@ func main() {
 	}
 	port, ok := orzconfiger.GetString("mysql", "port")
 	if !ok {
-		logger.Fatal("cant found host in mysql.port")
+		logger.Fatal("cant found port in mysql.port")
 	}
 	db, ok := orzconfiger.GetString("mysql", "database")
 	if !ok {
-		logger.Fatal("cant found host in mysql.database")
+		logger.Fatal("cant found database in mysql.database")
 	}
 	charset, ok := orzconfiger.GetString("mysql", "charset")
 	if !ok {
-		logger.Fatal("cant found host in mysql.charset")
+		logger.Fatal("cant found charset in mysql.charset")
 	}
 	timeGap, ok := orzconfiger.GetInt("mysql", "timeGap")
 	if !ok {
-		logger.Fatal("cant found host in mysql.timeGap")
+		logger.Fatal("cant found timeGap in mysql.timeGap")
 	}
 	username, ok := orzconfiger.GetString("mysql", "username")
 	if !ok {
-		logger.Fatal("cant found host in mysql.username")
+		logger.Fatal("cant found username in mysql.username")
 	}
 	password, ok := orzconfiger.GetString("mysql", "password")
 	if !ok {
-		logger.Fatal("cant found host in mysql.password")
+		logger.Fatal("cant found password in mysql.password")
 	}
 
 	GlobalDB = source.NewMysql(title, timeGap)
@@ -64,5 +67,17 @@ func main() {
 		logger.Fatal("base db init error " + err.Error())
 	}
 
-	logger.Info("server started.")
+	listenPort, ok := orzconfiger.GetString("server", "port")
+	if !ok {
+		logger.Fatal("cant found port in server.port")
+	}
+
+	http.HandleFunc("/", controller.IndexHandler)
+
+	logger.Info("server started. listen:" + listenPort)
+
+	err = http.ListenAndServe("0.0.0.0:"+listenPort, nil)
+	if err != nil {
+		logger.Fatal("server start error:" + err.Error())
+	}
 }

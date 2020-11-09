@@ -28,8 +28,7 @@ func NewMysql(title string, gap int) *Mysql {
 }
 
 /*
-	Sqlx惰性连接，open并不会实际建立连接。
-	因此此方法err不能用来验证连接是否成功。
+	Sqlx惰性连接，open并不会实际建立连接。该方法会立即使用Ping测试连接可用性。
 */
 func (m *Mysql) Connect(scheme string) (err error) {
 	if m.connected == true {
@@ -37,6 +36,12 @@ func (m *Mysql) Connect(scheme string) (err error) {
 	}
 	m.db, err = sqlx.Open("mysql", scheme)
 	m.scheme = scheme
+
+	//测试连接
+	err = m.Ping()
+	if err != nil {
+		return err
+	}
 	m.connected = true
 
 	go m.keepLive()
@@ -52,18 +57,18 @@ func (m *Mysql) ReConnect() (err error) {
 	if err != nil {
 		return err
 	}
-	m.connected = true
 	err = m.Ping()
-	return err
+	if err != nil {
+		return err
+	}
+	m.connected = true
+	return nil
 }
 
 /*
 	使用mysql_ping进行连接状态的探测。
 */
 func (m *Mysql) Ping() (err error) {
-	if !m.connected {
-		return errors.New("not connected, try Connect first")
-	}
 	err = m.db.Ping()
 	if err != nil {
 		m.connected = false
@@ -139,6 +144,7 @@ func (m *Mysql) keepLive() {
 	RETRY:
 		err := m.Ping()
 		if err != nil {
+			m.connected = false
 			logger.Info(m.title + " ticker reconnected.")
 			err = m.ReConnect()
 			if err != nil {

@@ -2,21 +2,28 @@ package source
 
 import (
 	"errors"
+	"time"
+
+	"github.com/orzzzli/orz_cms/src/logger"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 )
 
 type Mysql struct {
+	title     string //名称
 	scheme    string //连接信息
 	connected bool   //是否已经连接过
 	db        *sqlx.DB
+	pingGap   int //保活间隔，单位s
 }
 
-func NewMysql() *Mysql {
+func NewMysql(title string, gap int) *Mysql {
 	return &Mysql{
+		title:     title,
 		scheme:    "",
 		connected: false,
+		pingGap:   gap,
 	}
 }
 
@@ -31,6 +38,22 @@ func (m *Mysql) Connect(scheme string) (err error) {
 	m.db, err = sqlx.Open("mysql", scheme)
 	m.scheme = scheme
 	m.connected = true
+
+	go m.keepLive()
+
+	return err
+}
+
+/*
+	重连，更新结构体下的db，使用一个新的sqlx结构体替换原db，并自动ping
+*/
+func (m *Mysql) ReConnect() (err error) {
+	m.db, err = sqlx.Open("mysql", m.scheme)
+	if err != nil {
+		return err
+	}
+	m.connected = true
+	err = m.Ping()
 	return err
 }
 
@@ -103,4 +126,26 @@ func (m *Mysql) Set(query string) (interface{}, error) {
 	temp = append(temp, int(lastInsertId))
 	temp = append(temp, int(effected))
 	return temp, nil
+}
+
+func (m *Mysql) keepLive() {
+	ticker := time.NewTicker(time.Duration(m.pingGap) * time.Second)
+	defer ticker.Stop()
+
+	logger.Info(m.title + " heartbeat start.")
+
+	for range ticker.C {
+		logger.Info(m.title + " ticker triggered.")
+	RETRY:
+		err := m.Ping()
+		if err != nil {
+			logger.Info(m.title + " ticker reconnected.")
+			err = m.ReConnect()
+			if err != nil {
+				logger.Error(m.title + " reconnect fail.")
+				return
+			}
+			goto RETRY
+		}
+	}
 }

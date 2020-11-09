@@ -10,7 +10,7 @@ var testSelect = "select * from `data_sources`"
 var testInsert = "insert into `data_sources`(`title`,`desc`,`type`,`scheme`,`struct`) value (\"abc\",\"ddd\",1,\"qqq\",\"aaa\")"
 
 func TestMysql_Connect(t *testing.T) {
-	m := NewMysql()
+	m := NewMysql("test_cms", 30)
 	err := m.Connect(testScheme)
 	if err != nil {
 		t.Error(err)
@@ -18,7 +18,7 @@ func TestMysql_Connect(t *testing.T) {
 }
 
 func TestMysql_Ping(t *testing.T) {
-	m := NewMysql()
+	m := NewMysql("test_cms", 30)
 	//no connect
 	err := m.Ping()
 	if err == nil {
@@ -35,7 +35,7 @@ func TestMysql_Ping(t *testing.T) {
 }
 
 func TestMysql_Get(t *testing.T) {
-	m := NewMysql()
+	m := NewMysql("test_cms", 30)
 	err := m.Connect(testScheme)
 	if err != nil {
 		t.Error(err)
@@ -51,7 +51,7 @@ func TestMysql_Get(t *testing.T) {
 }
 
 func TestMysql_Set(t *testing.T) {
-	m := NewMysql()
+	m := NewMysql("test_cms", 30)
 	err := m.Connect(testScheme)
 	if err != nil {
 		t.Error(err)

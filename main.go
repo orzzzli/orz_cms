@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 	"net/http"
+	"os"
+	"syscall"
 
 	"github.com/orzzzli/orz_cms/src/controller"
 
@@ -28,6 +30,16 @@ func main() {
 	}
 	orzconfiger.InitConfiger(configPath)
 
+	initBaseDB()
+	//initLogger()
+
+	http.HandleFunc("/", controller.IndexHandler)
+
+	initServer()
+}
+
+//初始化base mysql
+func initBaseDB() {
 	title, ok := orzconfiger.GetString("mysql", "title")
 	if !ok {
 		logger.Fatal("cant found title in mysql.title")
@@ -66,17 +78,42 @@ func main() {
 	if err != nil {
 		logger.Fatal("base db init error " + err.Error())
 	}
+}
 
+//初始化logger
+func initLogger() {
+	logPath, ok := orzconfiger.GetString("log", "path")
+	if !ok {
+		logger.Fatal("cant found path in log.path")
+	}
+	logger.Info("log path is:" + logPath)
+	info, err := os.Stat(logPath)
+	if err == nil {
+		//非文件夹
+		if !info.IsDir() {
+			logger.Fatal("log path is not a folder")
+		}
+	}
+	//是否存在
+	if os.IsNotExist(err) {
+		logger.Fatal("log path is not exist")
+	}
+	//是否有读写权限
+	err = syscall.Access(logPath, syscall.O_RDWR)
+	if err != nil {
+		logger.Fatal("log path cant read and write.")
+	}
+}
+
+//初始化httpServer
+func initServer() {
 	listenPort, ok := orzconfiger.GetString("server", "port")
 	if !ok {
 		logger.Fatal("cant found port in server.port")
 	}
+	logger.Info("server listen:" + listenPort)
 
-	http.HandleFunc("/", controller.IndexHandler)
-
-	logger.Info("server started. listen:" + listenPort)
-
-	err = http.ListenAndServe("0.0.0.0:"+listenPort, nil)
+	err := http.ListenAndServe("0.0.0.0:"+listenPort, nil)
 	if err != nil {
 		logger.Fatal("server start error:" + err.Error())
 	}

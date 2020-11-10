@@ -26,23 +26,36 @@ var (
 )
 
 func Info(str string) {
-	now := time.Unix(time.Now().Unix(), 0).Format("2006-01-02 15:04:05")
-	fmt.Print(now)
-	fmt.Print(green, " Info :", reset)
-	fmt.Println(str)
+	output := format("Info", str)
+	outputConsole(output)
 }
 
 func Error(str string) {
-	now := time.Unix(time.Now().Unix(), 0).Format("2006-01-02 15:04:05")
-	fmt.Print(now)
-	fmt.Print(red, " Error:", reset)
-	fmt.Println(str)
+	output := format("Error", str)
+	outputConsole(output)
 }
 
 func Fatal(str string) {
-	now := time.Unix(time.Now().Unix(), 0).Format("2006-01-02 15:04:05")
-	fmt.Print(now)
-	fmt.Print(red, " Fatal:", reset)
-	fmt.Println(str)
+	output := format("Fatal", str)
+	outputConsole(output)
 	os.Exit(1)
+}
+
+func format(level string, str string) string {
+	now := time.Unix(time.Now().Unix(), 0).Format("2006-01-02 15:04:05")
+	levelStr := ""
+	if level == "Info" {
+		levelStr = green + " Info :" + reset
+	}
+	if level == "Error" {
+		levelStr = red + " Error:" + reset
+	}
+	if level == "Fatal" {
+		levelStr = red + " Fatal:" + reset
+	}
+	return fmt.Sprintf("%s%s%s\n", now, levelStr, str)
+}
+
+func outputConsole(str string) {
+	fmt.Print(str)
 }

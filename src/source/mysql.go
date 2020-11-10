@@ -149,9 +149,11 @@ func (m *Mysql) keepLive() {
 			err = m.ReConnect()
 			if err != nil {
 				logger.Error(m.title + " reconnect fail.")
-				return
+				time.Sleep(5 * time.Second)
+				goto RETRY
+			} else {
+				logger.Info(m.title + " reconnect success.")
 			}
-			goto RETRY
 		}
 	}
 }

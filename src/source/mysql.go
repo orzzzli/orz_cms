@@ -133,6 +133,14 @@ func (m *Mysql) Set(query string) (interface{}, error) {
 	return temp, nil
 }
 
+func (m *Mysql) GetTitle() string {
+	return m.title
+}
+
+func (m *Mysql) GetScheme() string {
+	return m.scheme
+}
+
 func (m *Mysql) keepLive() {
 	ticker := time.NewTicker(time.Duration(m.pingGap) * time.Second)
 	defer ticker.Stop()

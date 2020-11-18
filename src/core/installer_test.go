@@ -63,3 +63,17 @@ func TestIsInstalled(t *testing.T) {
 		t.Log("not installed.")
 	}
 }
+
+func TestInstallDefaultData(t *testing.T) {
+	m := source.NewMysql("test_cms", 30)
+	err := m.Connect(testScheme)
+	if err != nil {
+		t.Error(err)
+	}
+	complete := InstallDefaultData(m)
+	if complete {
+		t.Log("data installed.")
+	} else {
+		t.Log("data not installed.")
+	}
+}

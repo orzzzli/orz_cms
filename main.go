@@ -6,6 +6,8 @@ import (
 	"os"
 	"syscall"
 
+	"github.com/orzzzli/orz_cms/src/core"
+
 	"github.com/orzzzli/orz_cms/src/controller"
 
 	"github.com/orzzzli/orz_cms/src/source"
@@ -14,8 +16,6 @@ import (
 
 	"github.com/orzzzli/orz_cms/src/logger"
 )
-
-var GlobalDB *source.Mysql
 
 func main() {
 	var configPath string
@@ -34,6 +34,7 @@ func main() {
 	//initLogger()
 
 	http.HandleFunc("/", controller.IndexHandler)
+	http.HandleFunc("/install", controller.InstallHandler)
 
 	initServer()
 }
@@ -73,8 +74,8 @@ func initBaseDB() {
 		logger.Fatal("cant found password in mysql.password")
 	}
 
-	GlobalDB = source.NewMysql(title, timeGap)
-	err := GlobalDB.Connect(username + ":" + password + "@tcp(" + host + ":" + port + ")/" + db + "?charset=" + charset)
+	core.GlobalDB = source.NewMysql(title, timeGap)
+	err := core.GlobalDB.Connect(username + ":" + password + "@tcp(" + host + ":" + port + ")/" + db + "?charset=" + charset)
 	if err != nil {
 		logger.Fatal("base db init error " + err.Error())
 	}

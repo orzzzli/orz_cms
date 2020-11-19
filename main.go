@@ -45,10 +45,14 @@ func main() {
 	http.HandleFunc("/workbench/main", controller.IndexHandler)
 	//工作台相关：主区域内容操作
 	http.HandleFunc("/workbench/action", controller.IndexHandler)
-	//安装相关：安装页面
+	//todo:安装相关：安装页面
 	http.HandleFunc("/install", controller.InstallHandler)
-	//安装相关：清除数据，重新安装
-	http.HandleFunc("/install/reset", controller.InstallHandler)
+	//安装相关：安装接口
+	http.HandleFunc("/install/install", controller.InstallHandler)
+	//安装相关：安装信息接口
+	http.HandleFunc("/install/info", controller.InstallInfoHandler)
+	//安装相关：清除数据，重新安装接口
+	http.HandleFunc("/install/reset", controller.ResetHandler)
 
 	initServer()
 }

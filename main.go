@@ -33,8 +33,22 @@ func main() {
 	initBaseDB()
 	//initLogger()
 
+	//登录相关：登录页面，未安装跳转至安装页面
 	http.HandleFunc("/", controller.IndexHandler)
+	//登录相关：登录接口
+	http.HandleFunc("/login", controller.IndexHandler)
+	//工作台相关：工作台页面
+	http.HandleFunc("/workbench", controller.IndexHandler)
+	//工作台相关：获取左侧列表
+	http.HandleFunc("/workbench/list", controller.IndexHandler)
+	//工作台相关：获取主区域内容
+	http.HandleFunc("/workbench/main", controller.IndexHandler)
+	//工作台相关：主区域内容操作
+	http.HandleFunc("/workbench/action", controller.IndexHandler)
+	//安装相关：安装页面
 	http.HandleFunc("/install", controller.InstallHandler)
+	//安装相关：清除数据，重新安装
+	http.HandleFunc("/install/reset", controller.InstallHandler)
 
 	initServer()
 }
